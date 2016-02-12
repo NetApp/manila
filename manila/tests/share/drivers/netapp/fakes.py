@@ -16,6 +16,7 @@
 from manila.share import configuration as conf
 from manila.share import driver as manila_opts
 from manila.share.drivers.netapp import options as na_opts
+from manila.share.drivers.netapp.wfa import wfa_driver
 
 
 def create_configuration():
@@ -31,4 +32,10 @@ def create_configuration():
 def create_configuration_cmode():
     config = create_configuration()
     config.append_config_values(na_opts.netapp_support_opts)
+    return config
+
+
+def create_configuration_wfa():
+    config = create_configuration()
+    config.append_config_values(wfa_driver.WFA_OPTS)
     return config
