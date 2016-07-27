@@ -44,7 +44,15 @@ netapp_transport_opts = [
                default='http',
                help=('The transport protocol used when communicating with '
                      'the storage system or proxy server. Valid values are '
-                     'http or https.')), ]
+                     'http or https.')),
+    cfg.IntOpt('netapp_mtu',
+               default=1500,
+               deprecated_for_removal=True,
+               help='Maximum Transmission Unit (MTU) for network broadcast '
+                    'domains. This option only applies when the option '
+                    'driver_handles_share_servers is set to True and '
+                    'with clustered DATA ONTAP 8.3 or later. This option '
+                    'will cease to exist in the N release and beyond.'), ]
 
 netapp_basicauth_opts = [
     cfg.StrOpt('netapp_login',

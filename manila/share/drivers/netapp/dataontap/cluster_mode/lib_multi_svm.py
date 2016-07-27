@@ -273,13 +273,15 @@ class NetAppCmodeMultiSVMFileStorageLibrary(
         ip_address = network_allocation['ip_address']
         netmask = utils.cidr_to_netmask(network_allocation['cidr'])
         vlan = network_allocation['segmentation_id']
+        network_mtu = network_allocation.get('mtu')
+        mtu = network_mtu or self.configuration.netapp_mtu
 
         if not vserver_client.network_interface_exists(
                 vserver_name, node_name, port, ip_address, netmask, vlan):
 
             self._client.create_network_interface(
                 ip_address, netmask, vlan, node_name, port, vserver_name,
-                lif_name, ipspace_name)
+                lif_name, ipspace_name, mtu)
 
     @na_utils.trace
     def get_network_allocations_number(self):

@@ -19,6 +19,7 @@ import copy
 
 import ddt
 import mock
+from oslo_config import cfg
 from oslo_log import log
 
 from manila import context
@@ -30,6 +31,9 @@ from manila.share.drivers.netapp import utils as na_utils
 from manila import test
 from manila.tests.share.drivers.netapp.dataontap.client import fakes as c_fake
 from manila.tests.share.drivers.netapp.dataontap import fakes as fake
+
+
+CONF = cfg.CONF
 
 
 @ddt.ddt
@@ -538,7 +542,20 @@ class NetAppFileStorageLibraryTestCase(test.TestCase):
 
         self.assertEqual('os_132dbb10-9a36-46f2-8d89-3d909830c356', result)
 
-    def test_create_lif(self):
+    @ddt.data(fake.MTU, None, 'not-present')
+    def test_create_lif_mtu_from_network(self, mtu):
+        """Tests cases where MTU is a valid value, None or not present."""
+
+        expected_mtu = (mtu if mtu not in (None, 'not-present') else
+                        fake.DEFAULT_MTU)
+        self.library.configuration.netapp_mtu = fake.DEFAULT_MTU
+
+        network_allocations = copy.deepcopy(
+            fake.NETWORK_INFO['network_allocations'][0])
+        network_allocations['mtu'] = mtu
+
+        if mtu == 'not-present':
+            network_allocations.pop('mtu')
 
         vserver_client = mock.Mock()
         vserver_client.network_interface_exists = mock.Mock(
@@ -552,12 +569,12 @@ class NetAppFileStorageLibraryTestCase(test.TestCase):
                                  'fake_ipspace',
                                  'fake_node',
                                  'fake_lif',
-                                 fake.NETWORK_INFO['network_allocations'][0])
+                                 network_allocations)
 
         self.library._client.create_network_interface.assert_has_calls([
             mock.call('10.10.10.10', '255.255.255.0', '1000', 'fake_node',
                       'fake_port', 'fake_vserver', 'fake_lif',
-                      'fake_ipspace')])
+                      'fake_ipspace', expected_mtu)])
 
     def test_create_lif_if_nonexistent_already_present(self):
 
